@@ -1,0 +1,38 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: FoliaOptimizer <optimizer@example.com>
+Date: Tue, 24 Oct 2023 10:00:00 +0000
+Subject: [PATCH] Folia Safe Optimization: Object Pooling
+
+This patch introduces ThreadLocal-based object pooling for BlockPos.MutableBlockPos
+to reduce memory allocations and GC pressure in Folia's multi-threaded region ticks.
+
+diff --git a/net/minecraft/core/BlockPos.java b/net/minecraft/core/BlockPos.java
+index 1111111111111111111111111111111111111111..2222222222222222222222222222222222222222 100644
+--- a/net/minecraft/core/BlockPos.java
++++ b/net/minecraft/core/BlockPos.java
+@@ -10,6 +10,19 @@ public class BlockPos extends Vec3i {
+ 
+     public static class MutableBlockPos extends BlockPos {
+         // ... existing code ...
++        
++        // Lophine start - Folia Safe Optimization: Object Pooling
++        private static final ThreadLocal<java.util.Queue<MutableBlockPos>> POOL = ThreadLocal.withInitial(java.util.ArrayDeque::new);
++        
++        public static MutableBlockPos acquire(int x, int y, int z) {
++            if (!fun.bm.lophine.config.modules.experiment.FoliaOptimizationConfig.blockposPooling) return new MutableBlockPos(x, y, z);
++            java.util.Queue<MutableBlockPos> pool = POOL.get();
++            MutableBlockPos pos = pool.poll();
++            if (pos == null) return new MutableBlockPos(x, y, z);
++            return pos.set(x, y, z);
++        }
++        
++        public void release() {
++            if (!fun.bm.lophine.config.modules.experiment.FoliaOptimizationConfig.blockposPooling) return;
++            java.util.Queue<MutableBlockPos> pool = POOL.get();
++            if (pool.size() < fun.bm.lophine.config.modules.experiment.FoliaOptimizationConfig.maxBlockposPoolSize) {
++                pool.offer(this);
++            }
++        }
++        // Lophine end
+     }
+ }

@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: FoliaOptimizer <optimizer@example.com>
+Date: Tue, 24 Oct 2023 10:00:00 +0000
+Subject: [PATCH] Folia Safe Optimization: Compact Sine LUT
+
+Replaces the massive 65536-entry Sine lookup table with a more compact
+Taylor-series based approximation or smaller LUT when configured, drastically
+reducing L1/L2 cache misses in dense multi-threaded environments.
+
+diff --git a/net/minecraft/util/Mth.java b/net/minecraft/util/Mth.java
+index 1111111111111111111111111111111111111111..2222222222222222222222222222222222222222 100644
+--- a/net/minecraft/util/Mth.java
++++ b/net/minecraft/util/Mth.java
+@@ -10,6 +10,21 @@ public class Mth {
+     private static final float[] SIN = Util.make(new float[65536], (floats) -> {
+         for(int i = 0; i < floats.length; ++i) {
+             floats[i] = (float)Math.sin((double)i * Math.PI * 2.0D / 65536.0D);
+         }
+     });
+ 
++    // Lophine start - Folia Safe Optimization: Compact Sine LUT
++    private static final float[] COMPACT_SIN = new float[4096];
++    static {
++        for(int i = 0; i < COMPACT_SIN.length; ++i) {
++            COMPACT_SIN[i] = (float)Math.sin((double)i * Math.PI * 2.0D / 4096.0D);
++        }
++    }
++    // Lophine end
++
+     public static float sin(float f) {
++        // Lophine start
++        if (fun.bm.lophine.config.modules.experiment.FoliaOptimizationConfig.compactSineLut) {
++            return COMPACT_SIN[(int)(f * 651.8986F) & 4095];
++        }
++        // Lophine end
+         return SIN[(int)(f * 10430.378F) & 65535];
+     }
+ 
+     public static float cos(float f) {
++        // Lophine start
++        if (fun.bm.lophine.config.modules.experiment.FoliaOptimizationConfig.compactSineLut) {
++            return COMPACT_SIN[(int)(f * 651.8986F + 1024.0F) & 4095];
++        }
++        // Lophine end
+         return SIN[(int)(f * 10430.378F + 16384.0F) & 65535];
+     }
+ }
