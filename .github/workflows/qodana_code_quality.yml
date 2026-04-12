@@ -7,6 +7,12 @@ on:
       - ver/* # Stable branch
       - exp/* # Experimental branch
       - dev/* # Development Branch
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
+      - ".gitignore"
+      - "LICENSE"
+      - "*.txt"
 
 jobs:
   qodana:
