@@ -15,7 +15,8 @@ index 1111111111111111111111111111111111111111..22222222222222222222222222222222
      protected void encode(ChannelHandlerContext ctx, ByteBuf msg, ByteBuf out) {
 +        // Lophine start - Folia Safe Optimization: Native Compression
 +        if (fun.bm.lophine.config.modules.experiment.FoliaOptimizationConfig.nativeCompression) {
-+            // Redirect to Velocity-powered libdeflate encoder logic here.
++            int level = fun.bm.lophine.config.modules.experiment.FoliaOptimizationConfig.compressionLevel;
++            // Redirect to Velocity-powered libdeflate encoder logic here using 'level'.
 +            // Example stub implementation.
 +        }
 +        // Lophine end
