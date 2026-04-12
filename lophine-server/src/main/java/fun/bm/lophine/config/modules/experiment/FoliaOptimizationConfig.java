@@ -13,4 +13,7 @@ public class FoliaOptimizationConfig implements IConfigModule {
 
     @ConfigInfo(name = "memory.max-blockpos-pool-size", comments = "Maximum number of cached MutableBlockPos per thread")
     public static int maxBlockposPoolSize = 512;
+
+    @ConfigInfo(name = "memory.type-filterable-collections", comments = "Enable fastutil type-filterable collections for O(1) entity lookups")
+    public static boolean typeFilterableCollections = true;
 }
