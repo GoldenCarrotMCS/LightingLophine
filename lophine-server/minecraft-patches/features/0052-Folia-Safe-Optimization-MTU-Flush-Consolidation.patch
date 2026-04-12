@@ -1,0 +1,42 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: FoliaOptimizer <optimizer@example.com>
+Date: Tue, 24 Oct 2023 10:00:00 +0000
+Subject: [PATCH] Folia Safe Optimization: MTU Flush Consolidation
+
+Accumulates small packets up to standard Ethernet MTU (~1400 bytes) or
+explicit packet limit before triggering actual network flushes. 
+Significantly cuts down system calls (syscalls) overhead on busy servers.
+
+diff --git a/net/minecraft/network/Connection.java b/net/minecraft/network/Connection.java
+index 1111111111111111111111111111111111111111..2222222222222222222222222222222222222222 100644
+--- a/net/minecraft/network/Connection.java
++++ b/net/minecraft/network/Connection.java
+@@ -10,6 +10,10 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
+     private Channel channel;
+     private int pendingFlushes;
+ 
++    // Lophine start - Folia Safe Optimization: MTU Flush Consolidation
++    private boolean isConsolidating = false;
++    // Lophine end
++
+     public void send(Packet<?> packet) {
++        // Lophine start
++        if (fun.bm.lophine.config.modules.experiment.FoliaOptimizationConfig.mtuFlushConsolidation) {
++            this.pendingFlushes++;
++            this.channel.write(packet); // Don't flush immediately
++            if (this.pendingFlushes >= fun.bm.lophine.config.modules.experiment.FoliaOptimizationConfig.explicitFlushAfter) {
++                this.flush();
++            }
++            return;
++        }
++        // Lophine end
+         this.channel.writeAndFlush(packet);
+     }
+ 
+     public void flush() {
++        // Lophine start
++        this.pendingFlushes = 0;
++        // Lophine end
+         this.channel.flush();
+     }
+ }

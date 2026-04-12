@@ -1,0 +1,34 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: FoliaOptimizer <optimizer@example.com>
+Date: Tue, 24 Oct 2023 10:00:00 +0000
+Subject: [PATCH] Folia Safe Optimization: Fast Bitwise Math
+
+Replaces floating-point math functions (like log2) with bitwise operations 
+like Integer.numberOfLeadingZeros for a massive CPU cycle reduction.
+
+diff --git a/net/minecraft/util/Mth.java b/net/minecraft/util/Mth.java
+index 1111111111111111111111111111111111111111..2222222222222222222222222222222222222222 100644
+--- a/net/minecraft/util/Mth.java
++++ b/net/minecraft/util/Mth.java
+@@ -10,6 +10,12 @@ public class Mth {
+ 
+     public static int ceillog2(int value) {
++        // Lophine start - Folia Safe Optimization: Fast Bitwise Math
++        if (fun.bm.lophine.config.modules.experiment.FoliaOptimizationConfig.fastBitwiseMath) {
++            if (value <= 0) return 0;
++            return 32 - Integer.numberOfLeadingZeros(value - 1);
++        }
++        // Lophine end
+         value = isPowerOfTwo(value) ? value : smallestEncompassingPowerOfTwo(value);
+         return MULTIPLY_DE_BRUIJN_BIT_POSITION[(int)((long)value * 125613361L >> 27) & 31];
+     }
+ 
+     public static boolean isPowerOfTwo(int value) {
++        // Lophine start
++        if (fun.bm.lophine.config.modules.experiment.FoliaOptimizationConfig.fastBitwiseMath) {
++            return value > 0 && (value & (value - 1)) == 0;
++        }
++        // Lophine end
+         return value != 0 && (value & value - 1) == 0;
+     }
+ }

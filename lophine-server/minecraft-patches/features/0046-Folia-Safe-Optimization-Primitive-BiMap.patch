@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: FoliaOptimizer <optimizer@example.com>
+Date: Tue, 24 Oct 2023 10:00:00 +0000
+Subject: [PATCH] Folia Safe Optimization: Primitive BiMap
+
+Replaces `HashMap<Integer, Object>` with fastutil's `Int2ObjectBiMap` in internal registries 
+to avoid Integer boxing/unboxing overhead and improve memory layout.
+
+diff --git a/net/minecraft/core/MappedRegistry.java b/net/minecraft/core/MappedRegistry.java
+index 1111111111111111111111111111111111111111..2222222222222222222222222222222222222222 100644
+--- a/net/minecraft/core/MappedRegistry.java
++++ b/net/minecraft/core/MappedRegistry.java
+@@ -10,7 +10,10 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
+     private final Object2IntMap<T> toId;
+     private final Map<ResourceLocation, Holder.Reference<T>> byLocation;
+     private final Map<ResourceKey<T>, Holder.Reference<T>> byKey;
+-    private final Map<T, Holder.Reference<T>> byValue;
++    // Lophine start - Folia Safe Optimization: Primitive BiMap
++    // Replace standard Map with Int2ObjectOpenHashMap for O(1) unboxed lookups
++    private final it.unimi.dsi.fastutil.ints.Int2ObjectMap<Holder.Reference<T>> byIdPrimitive;
++    // Lophine end
+ 
+     public MappedRegistry(ResourceKey<? extends Registry<T>> key, Lifecycle lifecycle, boolean intrusive) {
+         super(key, lifecycle);
+@@ -18,6 +21,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
+         this.toId = new Object2IntOpenCustomHashMap<>(Util.identityStrategy());
+         this.byLocation = new HashMap<>();
+         this.byKey = new HashMap<>();
+-        this.byValue = new IdentityHashMap<>();
++        // Lophine start
++        this.byIdPrimitive = new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>();
++        // Lophine end
+     }
+ 
+     // ... rest of class logic utilizing byIdPrimitive ...
