@@ -7,10 +7,10 @@ This patch introduces ThreadLocal-based object pooling for BlockPos.MutableBlock
 to reduce memory allocations and GC pressure in Folia's multi-threaded region ticks.
 
 diff --git a/net/minecraft/core/BlockPos.java b/net/minecraft/core/BlockPos.java
-index 1111111111111111111111111111111111111111..2222222222222222222222222222222222222222 100644
+index 0000000000000000000000000000000000000000..1111111111111111111111111111111111111111 100644
 --- a/net/minecraft/core/BlockPos.java
 +++ b/net/minecraft/core/BlockPos.java
-@@ -10,6 +10,19 @@ public class BlockPos extends Vec3i {
+@@ -10,6 +10,26 @@ public class BlockPos extends Vec3i {
  
      public static class MutableBlockPos extends BlockPos {
          // ... existing code ...
